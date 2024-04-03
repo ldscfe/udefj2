@@ -1,0 +1,24 @@
+# Doris - p158
+dorisp158.type=mysql
+dorisp158.host=192.168.0.158
+dorisp158.port=9030
+dorisp158.db=tidat
+dorisp158.user=root
+dorisp158.passwd=FpP9usT8toDMsV/Du6D63Q
+# MySQL - p83
+mysqlp83.type=mysql
+mysqlp83.host=192.168.0.83
+mysqlp83.port=3060
+mysqlp83.db=hutong
+mysqlp83.user=root
+mysqlp83.passwd=x2FrqqJZjIA
+# H2 - p158
+h2p158.type=h2
+h2p158.host=192.168.0.158
+h2p158.port=9092
+h2p158.db=/u01/h2db/bidb
+h2p158.user=sa
+h2p158.passwd=FpP9usT8toDMsV/Du6D63Q
+# Kafka - p182
+kafkap182.type=Kafka
+kafkap182.host=192.168.0.182:9092
