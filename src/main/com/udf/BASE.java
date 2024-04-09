@@ -7,16 +7,16 @@ package com.udf;
   Revisions:
   Ver        Date        Author           Description
   ---------  ----------  ---------------  ------------------------------------
-  1.0        2024/2/20   Adam
-  1.1        2024/2/27   Adam             merge STR
-  1.2        2024/2/29   Adam             remove commons-codec, replace util
-  1.21       2024/3/20   Adam             Add log, reverse2
-  1.22       2024/3/28   Adam             Add isnull, log4j --> slf4j
-
+  1.0        2024/02/20   Adam
+  1.1        2024/02/27   Adam             merge STR
+  1.2        2024/02/29   Adam             remove commons-codec, replace util
+  1.21       2024/03/20   Adam             Add log, reverse2
+  1.22       2024/03/28   Adam             Add isnull, log4j --> slf4j
+  1.23       2024/04/09   Adam             Add at(Atomicinteger)
  format:
-    object  : (string)
-    property:
-    method  : isnull, log, dt, hash, md5, base64, des, ltrim, rtrim, trim, reverse
+    object  :
+    property: json, UDEFLOGOFF
+    method  : isnull, log, dt, hash, md5, base64, des, ltrim, rtrim, trim, reverse, at
 
         <!--Json-->
         <dependency>
@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Int;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -56,9 +57,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
-    public static final String VERSION = "v1.22";
+    public static final String VERSION = "v1.23";
+    private static AtomicInteger _UDEFAT = new AtomicInteger(0);
     static {
         PropertyConfigurator.configure("config/log4j.properties");
     }
@@ -340,5 +343,18 @@ public class BASE {
     // left & right remove i substring
     public static String trim(String str1, String str2, int i) {
         return rtrim(ltrim(str1, str2, i), str2, i);
+    }
+    public static int at(int flag) {
+        switch(flag) {
+            case 1:
+                return _UDEFAT.getAndIncrement();
+            case -1:
+                return _UDEFAT.getAndDecrement();
+            case 0:
+                return _UDEFAT.get();
+            default :
+                _UDEFAT.set(flag);
+                return flag;
+        }
     }
 }
