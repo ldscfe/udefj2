@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: test
+Main-Class: testbase
 Class-Path: mysql-connector-j-8.0.33.jar gson-2.8.9.jar jopt-simple-4.9.
  jar kafka_2.11-0.10.0.1.jar slf4j-reload4j-2.0.9.jar log4j-1.2.17.jar h
  2-2.2.224.jar jackson-annotations-2.9.0.jar reload4j-1.2.22.jar slf4j-a

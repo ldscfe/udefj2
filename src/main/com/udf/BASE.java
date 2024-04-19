@@ -2,7 +2,7 @@ package com.udf;
 /*
 ------------------------------------------------------------------------------
   Name     : Udf.base.BASE
-  Purpose  : string crypt & decrypt, datetime
+  Purpose  : string crypt, hash, datetime, isnull, trim, etc...
   Author   : Adam
   Revisions:
   Ver        Date        Author           Description
@@ -15,8 +15,8 @@ package com.udf;
   1.23       2024/04/09   Adam             Add at(Atomicinteger)
  format:
     object  :
-    property: json, UDEFLOGOFF
-    method  : isnull, log, dt, hash, md5, base64, des, ltrim, rtrim, trim, reverse, at
+    property: VERSION, json, UDEFLOGOFF, LOOPMAX
+    method  : at, isnull, log, dt, hash, md5, base64, des, ltrim, rtrim, trim, reverse
 
         <!--Json-->
         <dependency>
@@ -45,7 +45,6 @@ import com.google.gson.Gson;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Int;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -60,25 +59,61 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
+    // Property
     public static final String VERSION = "v1.23";
-    private static AtomicInteger _UDEFAT = new AtomicInteger(0);
+    public static boolean UDEFLOGOFF = false;
+    public static String CHARSET = "UTF-8";
+    public static int LOOPMAX = 1024;
+    public static Gson json = new Gson();
+    // Private
+    private static final AtomicInteger _UDEFAT = new AtomicInteger(0);
     static {
         PropertyConfigurator.configure("config/log4j.properties");
     }
-    public static Gson json = new Gson();
-    public static boolean UDEFLOGOFF = false;
+    // Method
+    public static int at() {
+        return _UDEFAT.get();
+    }
+    public static int at(int flag) {
+        switch(flag) {
+            case 1:
+                return _UDEFAT.getAndIncrement();
+            case -1:
+                return _UDEFAT.getAndDecrement();
+            default :
+                _UDEFAT.set(flag);
+                return flag;
+        }
+    }
+    // Default behavior for unknown types (e.g., return "null")
+    public static String type(Object obj1) {
+        if (obj1 == null) return "null";
+
+        if      (obj1 instanceof String)     return "String";
+        else if (obj1 instanceof List)       return "List";
+        else if (obj1 instanceof Map)        return "Map";
+        else if (obj1 instanceof Properties) return "Properties";
+        else                                 return "null";
+    }
+    // Default behavior for unknown types (e.g., return default1[false])
+    public static boolean isnull(Object obj1) {
+        return isnull(obj1, false);
+    }
     public static boolean isnull(Object obj1, boolean default1) {
         if (obj1 == null) return true;
 
-        if      (obj1 instanceof String)     { return ((String)     obj1).isEmpty(); }
-        else if (obj1 instanceof List)       { return ((List)       obj1).isEmpty(); }
-        else if (obj1 instanceof Map)        { return ((Map)        obj1).isEmpty(); }
-        else if (obj1 instanceof Properties) { return ((Properties) obj1).isEmpty(); }
-        else                                 { return default1; }
-        // Default behavior for unknown types (e.g., return false)
-    }
-    public static boolean isnull(Object obj1) {
-        return isnull(obj1, false);
+        switch (type(obj1)) {
+            case "String":
+                return ((String)obj1).isEmpty();
+            case "List":
+                return ((List)obj1).isEmpty();
+            case "Map":
+                return ((Map)obj1).isEmpty();
+            case "Properties":
+                return ((Properties)obj1).isEmpty();
+            default:
+                return default1;
+        }
     }
     public static void log(Object log1) {
         if (UDEFLOGOFF) return;
@@ -107,14 +142,14 @@ public class BASE {
     // get sysdate, "-:" --> 2024-02-22 00:00:00.000
     public static String dt(String p, int len) {
         SimpleDateFormat df = new SimpleDateFormat();
-        if (p==null||p.length() <2)
+        if (isnull(p))
             df.applyPattern("yyyyMMddHHmmssSSS");
         else
             df.applyPattern("yyyy"+p.substring(0,1)+"MM"+p.substring(0,1)+"dd HH"+p.substring(1,2)+"mm"+p.substring(1,2)+"ss"+"."+"SSS");
 
-        Date date = new Date();
-        p = df.format(date);
-        len = (len<1||len>p.length())?p.length():len;
+        Date date1 = new Date();
+        p = df.format(date1);
+        len = (len<1 || len>p.length()) ? p.length() : len;
         return p.substring(0, len);
     }
     public static String dt(String p) {
@@ -128,12 +163,9 @@ public class BASE {
         return dt(14);
     }
     public static String hash(String s1, String type) {
-        if ((s1==null)||(s1.equals(""))) {
-            return "";
-        }
-        if ((type==null)||(type.equals(""))) {
-            type = "md5";
-        }
+        if (isnull(s1)) return "";
+        if (isnull(type)) type = "md5";
+
         String hash1 = "";
         try {
             MessageDigest md = MessageDigest.getInstance(type);
@@ -148,11 +180,10 @@ public class BASE {
         return hash(s1, "md5");
     }
     public static String base64(String s1) {
-        if ((s1==null)||(s1.equals(""))) {
-            return "";
-        }
+        if (isnull(s1)) return "";
+
         try {
-            String b64s1 = Base64.getEncoder().encodeToString(s1.getBytes("utf-8"));
+            String b64s1 = Base64.getEncoder().encodeToString(s1.getBytes(CHARSET));
             return b64s1;
         } catch (Exception e){
             logerror(e);
@@ -160,70 +191,67 @@ public class BASE {
         }
     }
     public static String ubase64(String s1) {
-        if ((s1==null)||(s1.equals(""))) {
-            return "";
-        }
+        if (isnull(s1)) return "";
+
         try {
             byte[] b1 = Base64.getDecoder().decode(s1);
-            return new String(b1, "utf-8");
+            return new String(b1, CHARSET);
         } catch (Exception e){
             logerror(e);
-            return null;
+            return "";
         }
     }
     public static String des(String s1, String k1) {
-        if (s1 == null) {
-            log("The parameter is NULL.");
-            return null;
+        if (isnull(s1) || isnull(k1)) {
+            logerror("The parameter is NULL.");
+            return "";
         }
         while (k1.length() < 8){
-            log("The parameter is short.");
+            logerror("The parameter is short.");
             k1 += "0";
         }
 
         String DES_ECB = "DES/ECB/PKCS5Padding";
-        String Charset = "UTF-8";
 
         try {
             // get key
-            DESKeySpec dk1 = new DESKeySpec(k1.getBytes(Charset));
+            DESKeySpec dk1 = new DESKeySpec(k1.getBytes(CHARSET));
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
             Key secretKey =  keyFactory.generateSecret(dk1);
 
             Cipher cipher = Cipher.getInstance(DES_ECB);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new SecureRandom());
-            byte[] b1 = cipher.doFinal(s1.getBytes(Charset));
+            byte[] b1 = cipher.doFinal(s1.getBytes(CHARSET));
             // JDK1.7 及以下可以使用 BASE64Encoder
             return Base64.getEncoder().encodeToString(b1);
         } catch (Exception e) {
             logerror(e);
-            return null;
+            return "";
         }
     }
     public static String udes(String s1, String k1) {
-        if (s1 == null) {
-            log("The parameter is NULL.");
-            return null;
+        if (isnull(s1) || isnull(k1)) {
+            logerror("The parameter is NULL.");
+            return "";
         }
         while (k1.length() < 8) {
-            log("The parameter is short.");
+            logerror("The parameter is short.");
             k1 += "0";
         }
 
         try {
             String DES_ECB = "DES/ECB/PKCS5Padding";
-            String Charset = "UTF-8";
             // get key
-            DESKeySpec dk1 = new DESKeySpec(k1.getBytes(Charset));
+            DESKeySpec dk1 = new DESKeySpec(k1.getBytes(CHARSET));
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
             Key secretKey =  keyFactory.generateSecret(dk1);
 
             Cipher cipher = Cipher.getInstance(DES_ECB);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new SecureRandom());
-            return new String(cipher.doFinal(Base64.getDecoder().decode(s1)), Charset);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(s1)), CHARSET);
         } catch (Exception e) {
             logerror(e);
-            return null;
+            return "";
         }
     }
     public static String des(String s1) {
@@ -268,9 +296,8 @@ public class BASE {
     }
     // reverse a string, like: abc --> cba
     public static String reverse(String s1) {
-        if ((s1==null)||(s1.equals(""))) {
-            return "";
-        }
+        if (isnull(s1)) return "";
+
         char[] cStr1 = s1.toCharArray();
         int len1 = cStr1.length;
         for (int i = 0; i < len1 / 2; i++) {
@@ -278,83 +305,54 @@ public class BASE {
             cStr1[i] = cStr1[len1 - 1 - i];
             cStr1[len1 - 1 - i] = c1;
         }
-        String rStr1 = new String(cStr1);
-        return rStr1;
+        //String rStr1 = new String(cStr1);
+        //return rStr1;
+        return String.valueOf(cStr1);
     }
     public static String reverse2(String s1) {
-        if ((s1==null)||(s1.equals(""))) {
-            return "";
-        }
+        if (isnull(s1)) return "";
+
         StringBuffer sf1 = new StringBuffer(128);
         sf1.append(s1);
         return sf1.reverse().toString();
     }
 
-    // left remove a substring
-    public static String ltrim(String str1, String str2) {
-        if (str1 == null) return str1;
-        if (str1.indexOf(str2) == 0)
-            return str1.substring(str2.length());
-        return str1;
+    // left remove all substring
+    public static String ltrim(String src, String rep) {
+        return ltrim(src, rep, LOOPMAX);
     }
     // left remove i substrings
-    public static String ltrim(String str1, String str2, int i) {
-        String s1, s2;
-        if (i == 0)
-            i = 1024;
-        s1 = str1;
-        s2 = str1;
+    public static String ltrim(String src, String rep, int i) {
+        if (i <= 0 || isnull(src) || isnull(rep)) return src;
         for (int j=0; j<i; j++) {
-            s2 = ltrim(s1, str2);
-            if (s1 == s2)
+            if (src.indexOf(rep) == 0) {
+                src = src.substring(rep.length());
+            } else {
                 break;
-            s1 = s2;
+            }
         }
-        return s2;
+        return src;
     }
-
-    // right remove a substring
-    public static String rtrim(String str1, String str2) {
-        return rtrim(str1, str2, 1);
+    // right remove all substring
+    public static String rtrim(String src, String rep) {
+        return rtrim(src, rep, LOOPMAX);
     }
     // right remove i substrings
-    public static String rtrim(String str1, String str2, int i) {
-        String rstr1, rstr2, s1, s2;
-        rstr1 = reverse(str1);
-        rstr2 = reverse(str2);
+    public static String rtrim(String src, String rep, int i) {
+        if (i <= 0 || isnull(src) || isnull(rep)) return src;
+        String rsrc, rrep;
+        rsrc = reverse(src);
+        rrep = reverse(rep);
 
-        if (i == 0)
-            i = 1024;
-        s1 = rstr1;
-        s2 = rstr1;
-        for (int j=0; j<i; j++) {
-            s2 = ltrim(s1, rstr2);
-            if (s1 == s2)
-                break;
-            s1 = s2;
-        }
-        return reverse(s2);
+        return reverse(ltrim(rsrc, rrep, i));
     }
 
-    // left & right remove a substring
-    public static String trim(String str1, String str2) {
-        return rtrim(ltrim(str1, str2), str2);
+    // left & right remove all substring
+    public static String trim(String src, String rep) {
+        return rtrim(ltrim(src, rep), rep);
     }
     // left & right remove i substring
-    public static String trim(String str1, String str2, int i) {
-        return rtrim(ltrim(str1, str2, i), str2, i);
-    }
-    public static int at(int flag) {
-        switch(flag) {
-            case 1:
-                return _UDEFAT.getAndIncrement();
-            case -1:
-                return _UDEFAT.getAndDecrement();
-            case 0:
-                return _UDEFAT.get();
-            default :
-                _UDEFAT.set(flag);
-                return flag;
-        }
+    public static String trim(String src, String rep, int i) {
+        return rtrim(ltrim(src, rep, i), rep, i);
     }
 }
