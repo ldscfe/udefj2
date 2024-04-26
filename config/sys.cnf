@@ -1,3 +1,5 @@
+## Used by DB Class 2/2
+## 2024/02/19, Adam Lee
 # dboffset
 db_offset.default=%sql% limit %limit% offset %offset%
 # MySQL7
