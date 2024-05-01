@@ -53,12 +53,14 @@ import java.time.Duration;
 import java.util.*;
 
 public class KAFKA extends BASE {
-    public static final String VERSION = "v1.2";
+    public static final String VERSION = "v1.2.1";
     public static Producer<String, String> producer;
     public static KafkaConsumer<String, String> consumer;
     public static ConsumerRecords<String, String> cr;                // set stream
-    public static ArrayList<String> topics = new ArrayList<>();      // topic list
-    public static HashMap<Long, ArrayList<String>> val = new HashMap<>();  // set result, [offset, value]
+    public static boolean status = false;                            // connect status
+    public static boolean statusCnf = false;                         // Kafka configuration
+    public static List<String> topics = new ArrayList<>();      // topic list
+    public static Map<Long, List<String>> val = new HashMap<>();  // set result, [offset, value]
     public static String jval = "";                                  // json set result
     public static int cs = 0;                                        // rows count
     public static int PullMS = 1000;                                 // default pull max 1000 millisecond
@@ -74,25 +76,43 @@ public class KAFKA extends BASE {
     public KAFKA(String mqname1) {
         this(mqname1, "db.cnf");
     }
-    public static ArrayList getTopics() {
+    public static boolean getStatus() {
+        AdminClient client1 = KafkaAdminClient.create(props);
+        Set topics1 = null;
+        try {
+            client1.listTopics().names().get();
+            status = true;
+            client1.close();
+        } catch (Exception e) {
+            status = false;
+            logerror(e);
+        }
+
+        return status;
+    }
+    public static List getTopics() {
+        if (!status) return new ArrayList<String>();
+
         AdminClient client1 = KafkaAdminClient.create(props);
         // get topic list
         Set topics1 = null;
         try {
             topics1 = client1.listTopics().names().get();
+            client1.close();
+            return new ArrayList<String>(topics1);
         } catch (Exception e) {
             logerror(e);
+            return new ArrayList<>();
         }
-        client1.close();
-        return new ArrayList<String>(topics1);
     }
-    public static ArrayList getos(String topic1, String group1) {
+    public static List getos(String topic1, String group1) {
         _consumer(topic1, group1, 1);
+        if (!status) return new ArrayList();
 
         long osb = 0;                                     // beginOffsets
         long ose = 0;                                     // endOffsets
         long osc = 0;                                     // currentOffsets
-        ArrayList los1 = new ArrayList();
+        List los1 = new ArrayList();
         Map<Integer, Long> beginOffsetMap = new HashMap<Integer, Long>();
         Map<Integer, Long> endOffsetMap = new HashMap<Integer, Long>();
         Map<Integer, Long> commitOffsetMap = new HashMap<Integer, Long>();
@@ -164,22 +184,23 @@ public class KAFKA extends BASE {
             return;
 
         _consumer(topic1, group1, records1);
+        if (!status) return;
 
         cr = consumer.poll(Duration.ofMillis(PullMS));
         cs = cr.count();
-        log("Get records: " + cs);
+        logwarn("Get records: " + cs);
 
         //_close();
     }
-    public static void put(String topic1, ArrayList<String> dat1) {
+    public static void put(String topic1, List<String> dat1) {
         producer = new KafkaProducer<>(props);
         for (String s : dat1) {
             producer.send(new ProducerRecord<String, String>(topic1, s));
         }
         producer.close();
-        log(String.format("Producer %s records successed.", dat1.size()));
+        logwarn(String.format("Producer %s records successed.", dat1.size()));
     }
-    public static void putsync(String topic1, ArrayList<String> dat1) {
+    public static void putsync(String topic1, List<String> dat1) {
         producer = new KafkaProducer<>(props);
         for (String s : dat1) {
             try {
@@ -191,7 +212,7 @@ public class KAFKA extends BASE {
             }
         }
         producer.close();
-        log(String.format("Synchronous Producer %s records successed.", dat1.size()));
+        logwarn(String.format("Synchronous Producer %s records successed.", dat1.size()));
     }
     public static void putcb(String topic1, ArrayList<String> dat1) {
         producer = new KafkaProducer<>(props);
@@ -209,6 +230,7 @@ public class KAFKA extends BASE {
     }
     public static void get(String topic1, String group1, int records1) {
         _consumer(topic1, group1, records1);
+        if (!status) return;
 
         long i;
         cr = consumer.poll(Duration.ofMillis(PullMS));
@@ -216,7 +238,7 @@ public class KAFKA extends BASE {
         log(String.format("Topic:[%s], Group:[%s], get records: %s", topic1, group1, cs));
 
         i = 0;
-        ArrayList lrs1;
+        List lrs1;
         for (ConsumerRecord<String, String> record : cr) {
             lrs1 = new ArrayList();
             lrs1.add(record.offset());
@@ -233,6 +255,7 @@ public class KAFKA extends BASE {
     }
     public static void reset(String topic1, String group1, long offset1) {
         _consumer(topic1, group1, 1);
+        if (!status) return;
 
         Set<TopicPartition> assignment1 = new HashSet<>();
         while (assignment1.size() == 0) {
@@ -256,7 +279,9 @@ public class KAFKA extends BASE {
         _close();
     }
     protected static void _init(String serv1) {
+        if (isnull(serv1)) return;
         props.put("bootstrap.servers", serv1);
+        props.put("request.timeout.ms", 5000);
         //props.put("group.id", sGroup);
         // producer
         props.put("key.serializer", StringSerializer.class.getName());
@@ -274,8 +299,13 @@ public class KAFKA extends BASE {
         props.put("session.timeout.ms", "30000");
         props.put("auto.offset.reset", "earliest");
         //props.put("max.poll.records", MaxRows);
+        statusCnf = true;
     }
     protected static void _consumer(String topic1, String group1, int records1) {
+        if (!statusCnf) {
+            logerror("Kafka configuration information not found.");
+            return;
+        }
         // Create consumer
         _close();
         props.put("group.id", group1);
@@ -283,6 +313,11 @@ public class KAFKA extends BASE {
         consumer = new KafkaConsumer(props);
         // Subscribe to topic
         consumer.subscribe(Arrays.asList(topic1));
+        status = getStatus();
+        if (!status) {
+            logerror("Kafka Server connect Error.");
+            return;
+        }
     }
     protected  static void _close() {
         try {
@@ -290,5 +325,6 @@ public class KAFKA extends BASE {
         } catch (Exception e) {
             logerror("Consumer closed.");
         }
+        status = false;
     }
 }

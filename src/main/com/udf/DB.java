@@ -33,13 +33,15 @@ package com.udf;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DB extends BASE {
-    public static final String VERSION = "v1.1";
-    public static HashMap<String, String> info = new HashMap<>();    // info
-    public static ArrayList<String> col = new ArrayList<>();         // data set column
-    public static HashMap<Integer, ArrayList<String>> val = new HashMap<>();  // data set result
-    public static HashMap<Integer, HashMap<String, String>> val2 = new HashMap<>();  // data set result2
+    public static final String VERSION = "v1.1.1";
+    public static Map<String, String> info = new HashMap<>();    // info
+    public static List<String> col = new ArrayList<>();         // data set column
+    public static Map<Integer, List<String>> val = new HashMap<>();  // data set result
+    public static Map<Integer, Map<String, String>> val2 = new HashMap<>();  // data set result2
     public static String jval2 = "";
     public static Connection conn;
     public static Statement curr;
@@ -47,7 +49,7 @@ public class DB extends BASE {
     public static int cs = 0;                                        // rows count
     public static boolean status = false;                            // db connect status
     public static int MaxRows = 1000;
-    protected static HashMap<String, String> dbinfo = new HashMap<>();   // db connect info
+    protected static Map<String, String> dbinfo = new HashMap<>();   // db connect info
     private String dboffset;
 
 
@@ -109,6 +111,9 @@ public class DB extends BASE {
 
         sDrive = dbinfo.get("drive");
         sJdbc = dbinfo.get("jdbc");
+        System.out.println(sJdbc);
+        if (isnull(sJdbc)) sJdbc = "";
+        System.out.println(sJdbc);
         sJdbc = sJdbc.replace("%host%", sHost);
         sJdbc = sJdbc.replace("%port%", sPort);
         sJdbc = sJdbc.replace("%db%", sDB);
@@ -161,7 +166,7 @@ public class DB extends BASE {
                 col.add(rs.getMetaData().getColumnName(j));
             }
 
-            ArrayList<String> lval1 = new ArrayList<>();
+            List<String> lval1 = new ArrayList<>();
             Object obj1;
             i = 0;
             while (rs.next()) {

@@ -18,11 +18,11 @@ package com.udf;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class CNF extends BASE {
-    public static final String VERSION = "v1.0";
+    public static final String VERSION = "v1.0.1";
     private static final Properties dCnf = new Properties();
     public CNF(String sFile) {
         // get config, if not path, default ./config/
@@ -56,7 +56,7 @@ public class CNF extends BASE {
         return dCnf.getProperty(key);
     }
     // put {sKey}{sKeyp}* Properties --> map
-    public void put(HashMap<String, String> mKV, String sKey, String sKeyp) {
+    public void put(Map<String, String> mKV, String sKey, String sKeyp) {
         String str1;
         for (String key : dCnf.stringPropertyNames()) {
             if (key.indexOf(sKey+sKeyp) == 0) {
@@ -67,7 +67,7 @@ public class CNF extends BASE {
         }
     }
     // default: item --> item.
-    public void put(HashMap<String, String> mKV, String sKey) {
+    public void put(Map<String, String> mKV, String sKey) {
         put(mKV, sKey, ".");
     }
 }

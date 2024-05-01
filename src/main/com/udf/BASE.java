@@ -97,9 +97,6 @@ public class BASE {
         else                                 return "";
     }
     // Default behavior for unknown types (e.g., return default1[false])
-    public static boolean isnull(Object obj1) {
-        return isnull(obj1, false);
-    }
     public static boolean isnull(Object obj1, boolean default1) {
         if (obj1 == null) return true;
 
@@ -115,6 +112,9 @@ public class BASE {
             default:
                 return default1;
         }
+    }
+    public static boolean isnull(Object obj1) {
+        return isnull(obj1, false);
     }
     public static void log(Object log1) {
         if (UDEFLOGOFF) return;
@@ -317,9 +317,14 @@ public class BASE {
 
         return para;
     }
+    // if ltrim&rtrim is true, trim char from char[] of trim1
+    public static Map<String, String> str2map(String src, String trim1) {
+         Map m1 = str2map(src);
+         return m1;
+    }
     // main(String[] args)
-    public static HashMap<String, String> str2map2(String[] src) {
-        HashMap<String, String> para = new HashMap<>();
+    public static Map<String, String> str2map2(String[] src) {
+        Map<String, String> para = new HashMap<>();
         for (int i=0; i<src.length; i++) {
             para.putAll(str2map(src[i]));
         }
@@ -327,18 +332,18 @@ public class BASE {
     }
     // list1, list2 --> map(list1, list2)
     // if list2 < list1, set to null.
-    public static HashMap<String, String> list2map(ArrayList<String> ky1, ArrayList<String> val1) {
-        HashMap<String, String> map1 = new HashMap<>();
+    public static Map<String, String> list2map(List<String> ky1, List<String> val1) {
+        Map<String, String> map1 = new HashMap<>();
         for (int i=0; i<ky1.size(); i++) {
             map1.put(ky1.get(i), i>=val1.size()?null:val1.get(i));
         }
         return map1;
     }
     // Splits strings -> List by the specified delimiter
-    public static ArrayList<String> split(String src, final char PC) {
+    public static List<String> split(String src, final char PC) {
         if (isnull(src)) return new ArrayList<>();
 
-        ArrayList<String> res = new ArrayList<>();
+        List<String> res = new ArrayList<>();
         StringBuilder buf1 = new StringBuilder();
 
         boolean flagd = true, flags = true;
@@ -371,7 +376,7 @@ public class BASE {
         return res;
     }
     //replace string from map
-    public static String rep(String src, HashMap<String, String> m1) {
+    public static String rep(String src, Map<String, String> m1) {
         if (isnull(src)||isnull(m1)) return src;
 
         for (String key : m1.keySet()) {
@@ -380,7 +385,7 @@ public class BASE {
 
         return src;
     }
-    public static ArrayList<String> split(String src) {
+    public static List<String> split(String src) {
         return split(src, ' ');
     }
     // reverse a string, like: abc --> cba
