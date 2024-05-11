@@ -8,7 +8,12 @@ db_mysql7.jdbc=jdbc:mysql://%host%:%port%/%db%?useSSL=false&allowPublicKeyRetrie
 # MySQL8
 db_mysql.drive=com.mysql.cj.jdbc.Driver
 db_mysql.jdbc=jdbc:mysql://%host%:%port%/%db%?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-
 # H2
 db_h2.drive=org.h2.Driver
 db_h2.jdbc=jdbc:h2:tcp://%host%:%port%/%db%;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+# H2M
+db_h2mem.drive=org.h2.Driver
+db_h2mem.jdbc=jdbc:h2:mem:%db%;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+# H2L
+db_h2l.drive=org.h2.Driver
+db_h2l.jdbc=jdbc:h2:%db%

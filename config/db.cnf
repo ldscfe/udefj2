@@ -21,6 +21,16 @@ h2p158.port=9092
 h2p158.db=/u01/h2db/bidb
 h2p158.user=sa
 h2p158.passwd=FpP9usT8toDMsV/Du6D63Q
+# H2 - Memory
+h2mem1.type=h2mem
+h2mem1.db=bidb
+# H2 - Local
+h2local.type=h2l
+h2local.host=127.0.0.1
+h2local.port=9092
+h2local.db=./consoledb
+h2local.user=root
+h2local.passwd=x2FrqqJZjIA=
 # Kafka - p182
 kafkap182.type=Kafka
 kafkap182.host=192.168.0.182:9092

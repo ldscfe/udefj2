@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DB extends BASE {
-    public static final String VERSION = "v1.1.1";
+    public static final String VERSION = "v1.1.2";
     public static Map<String, String> info = new HashMap<>();    // info
     public static List<String> col = new ArrayList<>();         // data set column
     public static Map<Integer, List<String>> val = new HashMap<>();  // data set result
@@ -113,10 +113,9 @@ public class DB extends BASE {
         sJdbc = dbinfo.get("jdbc");
         System.out.println(sJdbc);
         if (isnull(sJdbc)) sJdbc = "";
-        System.out.println(sJdbc);
-        sJdbc = sJdbc.replace("%host%", sHost);
-        sJdbc = sJdbc.replace("%port%", sPort);
-        sJdbc = sJdbc.replace("%db%", sDB);
+        if (!isnull(sHost)) sJdbc = sJdbc.replace("%host%", sHost);
+        if (!isnull(sPort)) sJdbc = sJdbc.replace("%port%", sPort);
+        if (!isnull(sDB)) sJdbc = sJdbc.replace("%db%", sDB);
 
         // register JDBC Driver
         try {
