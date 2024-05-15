@@ -11,13 +11,15 @@ package com.udf;
   1.1        2024/02/27   Adam             merge STR
   1.2        2024/02/29   Adam             remove commons-codec, replace util
   1.21       2024/03/20   Adam             Add log, reverse2
-  1.22       2024/03/28   Adam             Add isnull, log4j --> slf4j
+  1.22       2024/03/28   Adam             Add isnull, log4j -> slf4j
   1.23       2024/04/09   Adam             Add at(Atomicinteger)
   1.25       2024/04/22   Adam             Add split, rep
+  1.26       2024/05/15   Adam             split -> str2list, str2map(Specify separator)
+
  format:
     object  :
     property: VERSION, json, UDEFLOGOFF, LOOPMAX
-    method  : at, isnull, log, dt, hash, md5, base64, des, trim, rep, reverse, split
+    method  : at, isnull, log, dt, hash, md5, base64, des, trim, rep, reverse, str2list, str2map
 
         <!--Json-->
         <dependency>
@@ -61,7 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.25.1";
+    public static final String VERSION = "v1.26";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
@@ -147,11 +149,13 @@ public class BASE {
     // if l=0, get sysdate, "-:" --> 2024-02-22 00:00:00.000
     // if l>0, get sysdate from 19700101.(l=millisecond)
     public static String dt(String p, int len, long l) {
+        if (isnull(p)) p = "";
+
         SimpleDateFormat df = new SimpleDateFormat();
-        if (isnull(p) || p.length() < 2)
-            df.applyPattern("yyyyMMddHHmmssSSS");
-        else
+        if (p.length() == 2)
             df.applyPattern("yyyy"+p.substring(0,1)+"MM"+p.substring(0,1)+"dd HH"+p.substring(1,2)+"mm"+p.substring(1,2)+"ss"+"."+"SSS");
+        else
+            df.applyPattern("yyyyMMddHHmmssSSS");
 
         Date date1 = new Date();
         if (l > 0) {
@@ -186,6 +190,10 @@ public class BASE {
     // get sysdate, 20240222000000
     public static String dt() {
         return dt("", 14);
+    }
+    // te - tb, msecs
+    public static long msecs(String tb, String te) {
+        return 0L;
     }
     public static String hash(String s1, String type) {
         if (isnull(s1)) return s1;
@@ -278,30 +286,43 @@ public class BASE {
         }
     }
     public static String des(String s1) {
-        return des(s1, "DeiPd8ltuAE3");
+        return des(s1, "f0nnlS54jB0");
     }
     public static String udes(String s1) {
-        return udes(s1, "DeiPd8ltuAE3");
+        return udes(s1, "f0nnlS54jB0");
     }
     // string(a=1 b=c...) --> map({a=1, b=c, ...})
     // string(a=1 c d=2...) --> map({a=1, 1=c, d=2...})
     // Warn: Not supported key'=' or key"="
-    public static Map<String, String> str2map(String src) {
+    // if ltrim&rtrim is true, trim char from char[] of trim1
+    public static Map<String, String> str2map(String src, String sep) {
         if (isnull(src)) return new HashMap<>();
 
-        Map<String, String> para = new HashMap<>();
+        char sep1, sep2;
+        if (isnull(sep)) {
+            sep1 = ' ';
+            sep2 = '=';
+        } else if (sep.length() == 1) {
+            sep1 = sep.charAt(0);
+            sep2 = '=';
+        } else {
+            sep1 = sep.charAt(0);
+            sep2 = sep.charAt(1);
+        }
+
+        Map<String, String> para = new LinkedHashMap<>();
         String s11, key, val;
         String[] s1, s2;
 
-        List<String> ltmp = split(src);
+        List<String> ltmp = str2list(src, sep1);
         s1 = ltmp.toArray(new String[ltmp.size()]);
 
         for (int i=0; i<s1.length; i++) {
             try {
                 s11 = s1[i];
-                s2 = s11.split("=");
+                s2 = s11.split(String.valueOf(sep2));
                 key = s2[0];
-                val = ltrim(s11, key+"=");
+                val = ltrim(s11, key+sep2);
                 if (isnull(key)) {
                     key = String.valueOf(i);
                 }
@@ -317,14 +338,12 @@ public class BASE {
 
         return para;
     }
-    // if ltrim&rtrim is true, trim char from char[] of trim1
-    public static Map<String, String> str2map(String src, String trim1) {
-         Map m1 = str2map(src);
-         return m1;
+    public static Map<String, String> str2map(String src) {
+        return str2map(src, " =");
     }
     // main(String[] args)
     public static Map<String, String> str2map2(String[] src) {
-        Map<String, String> para = new HashMap<>();
+        Map<String, String> para = new LinkedHashMap<>();
         for (int i=0; i<src.length; i++) {
             para.putAll(str2map(src[i]));
         }
@@ -333,14 +352,15 @@ public class BASE {
     // list1, list2 --> map(list1, list2)
     // if list2 < list1, set to null.
     public static Map<String, String> list2map(List<String> ky1, List<String> val1) {
-        Map<String, String> map1 = new HashMap<>();
+        Map<String, String> map1 = new LinkedHashMap<>();
         for (int i=0; i<ky1.size(); i++) {
             map1.put(ky1.get(i), i>=val1.size()?null:val1.get(i));
         }
+
         return map1;
     }
     // Splits strings -> List by the specified delimiter
-    public static List<String> split(String src, final char PC) {
+    public static List<String> str2list(String src, final char PC) {
         if (isnull(src)) return new ArrayList<>();
 
         List<String> res = new ArrayList<>();
@@ -351,8 +371,8 @@ public class BASE {
 
         for (int i=0; i<src.length(); i++) {
             c = src.charAt(i);
-            if (c =='"')  flags = !flags;
-            if (c =='\'')  flagd = !flagd;
+            if (c =='"' && PC !='"')  flags = !flags;
+            if (c =='\'' && PC !='\'')  flagd = !flagd;
 
             // separator
             if (c == PC) {
@@ -375,6 +395,9 @@ public class BASE {
 
         return res;
     }
+    public static List<String> str2list(String src) {
+        return str2list(src, ' ');
+    }
     //replace string from map
     public static String rep(String src, Map<String, String> m1) {
         if (isnull(src)||isnull(m1)) return src;
@@ -384,9 +407,6 @@ public class BASE {
         }
 
         return src;
-    }
-    public static List<String> split(String src) {
-        return split(src, ' ');
     }
     // reverse a string, like: abc --> cba
     public static String reverse(String s1) {

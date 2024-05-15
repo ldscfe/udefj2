@@ -6,7 +6,7 @@ dorisp158.host=192.168.0.158
 dorisp158.port=9030
 dorisp158.db=tidat
 dorisp158.user=root
-dorisp158.passwd=FpP9usT8toDMsV/Du6D63Q
+dorisp158.passwd=kSd/qFOHxwwFqn+2zbcvdQ
 # MySQL - p83
 mysqlp83.type=mysql
 mysqlp83.host=192.168.0.83
@@ -14,13 +14,20 @@ mysqlp83.port=3060
 mysqlp83.db=hutong
 mysqlp83.user=root
 mysqlp83.passwd=x2FrqqJZjIA
+# postgresql - p182
+postgrep182.type=postgresql
+postgrep182.host=192.168.0.182
+postgrep182.port=5432
+postgrep182.db=postgres
+postgrep182.user=postgres
+postgrep182.passwd=92sQr2cYw8sFqn+2zbcvdQ
 # H2 - p158
 h2p158.type=h2
 h2p158.host=192.168.0.158
 h2p158.port=9092
 h2p158.db=/u01/h2db/bidb
 h2p158.user=sa
-h2p158.passwd=FpP9usT8toDMsV/Du6D63Q
+h2p158.passwd=kSd/qFOHxwwFqn+2zbcvdQ
 # H2 - Memory
 h2mem1.type=h2mem
 h2mem1.db=bidb
@@ -30,7 +37,7 @@ h2local.host=127.0.0.1
 h2local.port=9092
 h2local.db=./consoledb
 h2local.user=root
-h2local.passwd=x2FrqqJZjIA=
+h2local.passwd=19xXuIR8fgc
 # Kafka - p182
 kafkap182.type=Kafka
 kafkap182.host=192.168.0.182:9092

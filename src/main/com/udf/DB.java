@@ -20,6 +20,12 @@ package com.udf;
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
+        <!--postgresql-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.18</version>
+        </dependency>
         <!--h2-->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -31,26 +37,28 @@ package com.udf;
 */
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.LinkedHashMap;
+
 
 public class DB extends BASE {
-    public static final String VERSION = "v1.1.2";
-    public static Map<String, String> info = new HashMap<>();    // info
-    public static List<String> col = new ArrayList<>();         // data set column
-    public static Map<Integer, List<String>> val = new HashMap<>();  // data set result
-    public static Map<Integer, Map<String, String>> val2 = new HashMap<>();  // data set result2
-    public static String jval2 = "";
+    public static final String VERSION = "v1.1.5";
+    public static Map<String, String> info = new LinkedHashMap<>();            // info
+    public static List<String> col = new ArrayList<>();                        // data set column
+    public static Map<Integer, List<String>> val = new LinkedHashMap<>();      // data set result
+    public static Map<Integer, Map<String, String>> val2 = new LinkedHashMap<>();    // data set result2
+    public static String jval2 = "";                                           // data set result2(json)
     public static Connection conn;
     public static Statement curr;
     public static ResultSet rs;
-    public static int cs = 0;                                        // rows count
-    public static boolean status = false;                            // db connect status
-    public static int MaxRows = 1000;
-    protected static Map<String, String> dbinfo = new HashMap<>();   // db connect info
-    private String dboffset;
+    public static int cs = 0;                                                  // rows count
+    public static boolean status = false;                                      // db connect status
+    public static int MaxRows = 1000;                                          // return MAX of rows count
+    // protected & private
+    protected static Map<String, String> dbinfo = new LinkedHashMap<>();       // db connect info
+    private String dboffset;                                                   // db limit & offset format(from sys.cnf)
 
 
     public DB() {
@@ -68,7 +76,7 @@ public class DB extends BASE {
         dbconn();
     }
     public void setAll(String str1) {
-        String s1[] = str1.split(",");
+        String[] s1 = str1.split(",");
         for(int i=0; i<s1.length; i++) {
             info.put(s1[i], "");
         }
@@ -87,6 +95,8 @@ public class DB extends BASE {
         setAll("code,msg,status,cols,cs,secs,tb,te");
         col.clear();
         val.clear();
+        val2.clear();
+        jval2 = "";
     }
 
     public void dbconn() {
@@ -107,15 +117,16 @@ public class DB extends BASE {
             dboffset = "%sql%";
 
         cnf1.put(dbinfo, "db_" + sType);
-        info.putAll(dbinfo);
 
         sDrive = dbinfo.get("drive");
         sJdbc = dbinfo.get("jdbc");
-        System.out.println(sJdbc);
+
         if (isnull(sJdbc)) sJdbc = "";
         if (!isnull(sHost)) sJdbc = sJdbc.replace("%host%", sHost);
         if (!isnull(sPort)) sJdbc = sJdbc.replace("%port%", sPort);
         if (!isnull(sDB)) sJdbc = sJdbc.replace("%db%", sDB);
+        dbinfo.put("jdbc", sJdbc);
+        info.putAll(dbinfo);
 
         // register JDBC Driver
         try {
