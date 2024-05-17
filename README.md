@@ -27,11 +27,8 @@ method  : execSQL, execute, execStream
 
 Sample   : 001
 
-        String dbname, sql;
-        dbname = "mysqlp83";
-        DB db1 = new DB(dbname);
-        sql = "select * from test";
-        db1.execute(sql);
+        DB db1 = new DB("mysqlp83");
+        db1.execute("select * from test");
         log(db1.val2);
 
 Sample   : 002 - sql from file or DB
