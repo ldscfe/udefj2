@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.26";
+    public static final String VERSION = "v1.26.1";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
@@ -354,7 +354,7 @@ public class BASE {
     public static Map<String, String> list2map(List<String> ky1, List<String> val1) {
         Map<String, String> map1 = new LinkedHashMap<>();
         for (int i=0; i<ky1.size(); i++) {
-            map1.put(ky1.get(i), i>=val1.size()?null:val1.get(i));
+            map1.put(ky1.get(i), i>=val1.size()?"":val1.get(i));
         }
 
         return map1;
