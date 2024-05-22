@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.26.1";
+    public static final String VERSION = "v1.26.2";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
@@ -137,8 +137,6 @@ public class BASE {
             logger.warn(log1.toString());
     }
     public static void logerror(Object log1) {
-        if (UDEFLOGOFF) return;
-
         Logger logger = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
         if (log1==null)
             logger.error("");
@@ -191,7 +189,7 @@ public class BASE {
     public static String dt() {
         return dt("", 14);
     }
-    // te - tb, msecs
+    // ???? te - tb, msecs
     public static long msecs(String tb, String te) {
         return 0L;
     }
