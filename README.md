@@ -18,10 +18,10 @@ Sample   : 1 - log - Output information
         logerror("Hello, World!");
 
     // -- output --
-    2024-05-22 13:49:50,902 INFO [testbase] ==== slf4j-log4j ====
-    2024-05-22 13:49:50,902 INFO [testbase] Hello, World!
-    2024-05-22 13:49:50,903 WARN [testbase] Hello, World!
-    2024-05-22 13:49:50,903 ERROR [testbase] Hello, World!
+    ==== slf4j-log4j ====
+    Hello, World!
+    Hello, World!
+    Hello, World!
 
 Sample   : 2 - dt - datetime
 
@@ -32,10 +32,10 @@ Sample   : 2 - dt - datetime
         log(dt("-:", 19));
 
     // -- output --
-    2024-05-22 13:56:05,825 WARN [testbase] 20240522135605
-    2024-05-22 13:56:05,860 INFO [testbase] 2024/05/22 13:56:05
-    2024-05-22 13:56:05,861 INFO [testbase] 20240522
-    2024-05-22 13:56:05,861 INFO [testbase] 2024-05-22 13:56:05
+    20240522135605
+    2024/05/22 13:56:05
+    20240522
+    2024-05-22 13:56:05
 
 Sample   : 3 - hash - md5, sha1, sha256, base64, des...
 
@@ -54,20 +54,20 @@ Sample   : 3 - hash - md5, sha1, sha256, base64, des...
         log(udes("ZJ49zumHoYtt9oGaSeJWeQ"));
 
     // -- output --
-    2024-05-22 14:02:01,412 INFO [testbase] ==== hash ====
-    2024-05-22 14:02:01,412 INFO [testbase]
-    2024-05-22 14:02:01,489 INFO [testbase] fcff297b5772aa6d04967352c5f4eb96
-    2024-05-22 14:02:01,490 INFO [testbase] fcff297b5772aa6d04967352c5f4eb96
-    2024-05-22 14:02:01,491 INFO [testbase] dd0588c172986c32636ffdd8cc690de7b41bf253
-    2024-05-22 14:02:01,727 ERROR [com.udf.BASE] java.security.NoSuchAlgorithmException: sha2 MessageDigest not available
-    2024-05-22 14:02:01,729 INFO [testbase]
-    2024-05-22 14:02:01,731 INFO [testbase] 4aa5d2533987c34839e8dbc8d8fcac86f0137e31c1c6ea4349ade4fcaf87ed8
-    2024-05-22 14:02:01,737 INFO [testbase] c0d0df8be7405b0cdb12df4d674d64ebed62207ffe118ee5ee9d33071af4abf383d6efa2b56450e1475971e7e9105629c11ad855b08e17e9fbc6584c08403990
-    2024-05-22 14:02:01,738 INFO [testbase]
-    2024-05-22 14:02:01,741 INFO [testbase] aGVsbG8sIFdvcmxkIQ==
-    2024-05-22 14:02:01,741 INFO [testbase] hello, World!
-    2024-05-22 14:02:01,841 INFO [testbase] ZJ49zumHoYtt9oGaSeJWeQ==
-    2024-05-22 14:02:01,843 INFO [testbase] hello, World!
+    ==== hash ====
+    
+    fcff297b5772aa6d04967352c5f4eb96
+    fcff297b5772aa6d04967352c5f4eb96
+    dd0588c172986c32636ffdd8cc690de7b41bf253
+    java.security.NoSuchAlgorithmException: sha2 MessageDigest not available
+    
+    4aa5d2533987c34839e8dbc8d8fcac86f0137e31c1c6ea4349ade4fcaf87ed8
+    c0d0df8be7405b0cdb12df4d674d64ebed62207ffe118ee5ee9d33071af4abf383d6efa2b56450e1475971e7e9105629c11ad855b08e17e9fbc6584c08403990    
+
+    aGVsbG8sIFdvcmxkIQ==
+    hello, World!
+    ZJ49zumHoYtt9oGaSeJWeQ==
+    hello, World!
 
 Sample   : 4 - trim - ltrim, rtrim, trim
 
@@ -77,10 +77,10 @@ Sample   : 4 - trim - ltrim, rtrim, trim
         log(trim("==== isnull ====", "==="));
 
     // -- output --
-    2024-05-22 14:09:02,657 INFO [testbase] ==== trim ====
-    2024-05-22 14:09:02,657 INFO [testbase]  isnull ====
-    2024-05-22 14:09:02,657 INFO [testbase] ==== isnull
-    2024-05-22 14:09:02,657 INFO [testbase] = isnull =
+    ==== trim ====
+     isnull ====
+    ==== isnull
+    = isnull =
 
 Sample   : 5 - rep - replace string from map
 
@@ -101,11 +101,17 @@ property: status, info, col/val, val2, jval2
 
 method  : execSQL, execute, execStream
 
+DB       : MySQL(Doris), postgreSQL(Greenplum), H2
+
 Sample   : 001
 
-        DB db1 = new DB("mysqlp83");
+        DB db1 = new DB("postgrep182");
         db1.execute("select * from test");
-        log(db1.val2);
+        log(db1.jval2);
+
+    // -- output --
+    {"0":{"ky":"1","val":"Hello, World!"},"1":{"ky":"2","val":"Hello, DB."}}
+
 
 Sample   : 002 - sql from file or DB
 
