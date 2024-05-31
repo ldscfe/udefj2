@@ -15,6 +15,7 @@ package com.udf;
   1.23       2024/04/09   Adam             Add at(Atomicinteger)
   1.25       2024/04/22   Adam             Add split, rep
   1.26       2024/05/15   Adam             split -> str2list, str2map(Specify separator)
+  1.27       2024/05/31   Adam             Add arr2map, nvl
 
  format:
     object  :
@@ -63,7 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.26.2";
+    public static final String VERSION = "v1.27.0";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
@@ -117,6 +118,12 @@ public class BASE {
     }
     public static boolean isnull(Object obj1) {
         return isnull(obj1, false);
+    }
+    // if String is null, return ""
+    public static <T> T nvl(T t1) {
+        if (isnull(t1) && type(t1).equals("String"))
+            return (T)"";
+        return t1;
     }
     public static void log(Object log1) {
         if (UDEFLOGOFF) return;
@@ -288,6 +295,40 @@ public class BASE {
     }
     public static String udes(String s1) {
         return udes(s1, "f0nnlS54jB0");
+    }
+    // arguments array to map
+    // "--host", "127.0.0.1", "-p", "22"
+    public static Map<String, String> arr2map(String[] args, String...p) {
+        String ky = "", val = "", p1="";
+        if (isnull(p)) p1 = "- --"; else p1=p[0];
+        String[] pa = p1.split(" ") ;
+        Map<String, String> res = new LinkedHashMap<>();
+
+        Arrays.sort(pa, Collections.reverseOrder());
+
+        for (int i = 0; i < args.length; i++) {
+            ky = String.valueOf(i);
+            val = args[i] ;
+            for (int j = 0; j < pa.length; j++) {
+                if (args[i].startsWith(pa[j])) {
+                    ky = args[i].substring(pa[j].length());
+                    if (isnull(ky)) ky = String.valueOf(i);
+                    i++;
+                    val = i < args.length ? args[i] : "";
+                    for (int k = 0; j < pa.length; j++) {
+                        if (i < args.length && args[i].startsWith(pa[k])) {
+                            val = "";
+                            i--;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            res.put(ky, val);
+        }
+
+        return res;
     }
     // string(a=1 b=c...) --> map({a=1, b=c, ...})
     // string(a=1 c d=2...) --> map({a=1, 1=c, d=2...})

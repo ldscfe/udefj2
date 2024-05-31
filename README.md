@@ -84,6 +84,15 @@ Sample   : 4 - trim - ltrim, rtrim, trim
 
 Sample   : 5 - rep - replace string from map
 
+Sample   : 6 - arr2map - arguments array to map
+
+    String[] a1 = {"--host", "1", "-p", "3306", "$ip", "127.0.0.1", "$$cmd", "'split from tab'", "--", "test null key"};
+    log(arr2map(a1, "- -- $$ $"));
+    log(arr2map(a1, null));
+
+    // -- output --
+    {host=1, p=3306, ip=127.0.0.1, cmd='split from tab', 8=test null key}
+    {host=1, p=3306, 4=$ip, 5=127.0.0.1, 6=$$cmd, 7='split from tab', 8=test null key}
 
 ------------------------------------------------------------------------------
 ----
@@ -111,7 +120,6 @@ Sample   : 001
 
     // -- output --
     {"0":{"ky":"1","val":"Hello, World!"},"1":{"ky":"2","val":"Hello, DB."}}
-
 
 Sample   : 002 - sql from file or DB
 
