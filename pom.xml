@@ -93,10 +93,17 @@
             <artifactId>kafka-streams</artifactId>
             <version>${kafka-streams.version}</version>
         </dependency>
+        <!-- mail -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>${jakarta.mail.version}</version>
+        </dependency>
+        <!-- yaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.25</version>
         </dependency>
     </dependencies>
 </project>
