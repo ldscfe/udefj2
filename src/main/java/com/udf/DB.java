@@ -117,14 +117,14 @@ public class DB {
         sPasswd = udes(dbinfo.get("passwd"));
 
         // get db jdbc info
-        CNF cnf1 = new CNF("sys.cnf");
-        dboffset = cnf1.get("db_offset." + sType);
+        CNFYAML cnf1 = new CNFYAML("sys.yaml");
+        dboffset = map2map(cnf1.get("db_offset")).get(sType);
         if (dboffset==null)
-            dboffset = cnf1.get("db_offset.default");
+            dboffset = map2map(cnf1.get("db_offset")).get("default");
         if (dboffset==null)
             dboffset = "%sql%";
 
-        cnf1.put(dbinfo, "db_" + sType);
+        dbinfo = map2map(cnf1.get("db_" + sType));
 
         sDrive = dbinfo.get("drive");
         sJdbc = dbinfo.get("jdbc");
@@ -141,20 +141,23 @@ public class DB {
             Class.forName(sDrive);
         } catch (ClassNotFoundException e) {
             //throw new RuntimeException(e);
-            logerror(String.format("Class %s INIT Error: %s", sType, e.toString()));
+            info.put("msg", String.format("Class %s INIT Error: %s", sType, e.toString()));
+            logerror(info.get("msg"));
             return;
         }
 
         try {
             conn = DriverManager.getConnection(sJdbc, sUser, sPasswd);
         } catch (SQLException e) {
-            logerror(String.format("Class %s Connect Error: %s", sType, e.toString()));
+            info.put("msg", String.format("Class %s Connect Error: %s", sType, e.toString()));
+            logerror(info.get("msg"));
             return;
         }
         try {
             curr = conn.createStatement();
         } catch (SQLException e) {
-            logerror(String.format("Class %s Create Cursor Error: %s", sType, e.toString()));
+            info.put("msg", String.format("Class %s Create Cursor Error: %s", sType, e.toString()));
+            logerror(info.get("msg"));
             return;
         }
 
