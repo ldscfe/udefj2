@@ -10,13 +10,13 @@ package com.udf;
   1.0        2024/02/20   Adam
   1.1        2024/02/27   Adam             merge STR
   1.2        2024/02/29   Adam             remove commons-codec, replace util
-  1.21       2024/03/20   Adam             Add log, reverse2
-  1.22       2024/03/28   Adam             Add isnull, log4j -> slf4j
-  1.23       2024/04/09   Adam             Add at(Atomicinteger)
-  1.25       2024/04/22   Adam             Add split, rep
-  1.26       2024/05/15   Adam             split -> str2list, str2map(Specify separator)
-  1.27       2024/05/31   Adam             Add arr2map, nvl
-  1.29       2024/10/09   Adam             Add map2map(Object --> String), remove gson
+  1.2.1      2024/03/20   Adam             Add log, reverse2
+  1.2.2      2024/03/28   Adam             Add isnull, log4j -> slf4j
+  1.2.3      2024/04/09   Adam             Add at(Atomicinteger)
+  1.2.5      2024/04/22   Adam             Add split, rep
+  1.2.6      2024/05/15   Adam             split -> str2list, str2map(Specify separator)
+  1.2.7      2024/05/31   Adam             Add arr2map, nvl
+  1.2.9      2024/10/09   Adam             Add map2map(Object --> String), remove gson
 
  Usage:
     property: VERSION, json, UDEFLOGOFF, LOOPMAX
@@ -68,7 +68,7 @@ import java.util.stream.Collectors;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.28.0";
+    public static final String VERSION = "v1.29.0";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
