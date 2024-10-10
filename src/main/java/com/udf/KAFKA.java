@@ -9,11 +9,13 @@ package com.udf;
   ---------  ----------  ---------------  ------------------------------------
   1.0        2024/3/5    Adam             Create.
   1.2        2024/3/8    Adam             putsync, putcb
+  1.2.1      2024/10/9   Adam             Fix: KAFKA & getStatus, CNF -> CNFYAML
 
- format:
+ Usage:
     property: consumer
     method  : get, put, reset
-
+    import  : BASE
+    pom     :
         <!--Kafka-->
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -33,7 +35,6 @@ package com.udf;
 
 ------------------------------------------------------------------------------
 */
-
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -52,7 +53,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.time.Duration;
 import java.util.*;
 
-public class KAFKA extends BASE {
+import static com.udf.BASE.*;
+
+public class KAFKA {
     public static final String VERSION = "v1.2.1";
     public static Producer<String, String> producer;
     public static KafkaConsumer<String, String> consumer;
@@ -66,20 +69,26 @@ public class KAFKA extends BASE {
     public static int PullMS = 1000;                                 // default pull max 1000 millisecond
     public static int MaxRows = 500;
     private static final Properties props = new Properties();
+
     public KAFKA(String mqname1, String mq1) {
         // get db jdbc info
-        CNF cnf1 = new CNF(mq1);
-        String serv1 = cnf1.get(mqname1 + ".host");      // s1:9092,s2:9092,...
+        // using CNF
+        // CNF cnf1 = new CNF(mq1);
+        // String serv1 = cnf1.get(mqname1 + ".host");      // s1:9092,s2:9092,...
+        CNFYAML cnf1 = new CNFYAML(mq1);
+        String serv1 = (String) map2map(cnf1.get(mqname1)).get("host");      // s1:9092,s2:9092,...
 
         _init(serv1);    // props init
+        getStatus();     // set status
     }
     public KAFKA(String mqname1) {
-        this(mqname1, "db.cnf");
+        this(mqname1, "db.yaml");
     }
+
     public static boolean getStatus() {
-        AdminClient client1 = KafkaAdminClient.create(props);
         Set topics1 = null;
         try {
+            AdminClient client1 = KafkaAdminClient.create(props);
             client1.listTopics().names().get();
             status = true;
             client1.close();
@@ -93,10 +102,10 @@ public class KAFKA extends BASE {
     public static List getTopics() {
         if (!status) return new ArrayList<String>();
 
-        AdminClient client1 = KafkaAdminClient.create(props);
         // get topic list
         Set topics1 = null;
         try {
+            AdminClient client1 = KafkaAdminClient.create(props);
             topics1 = client1.listTopics().names().get();
             client1.close();
             return new ArrayList<String>(topics1);
@@ -248,7 +257,7 @@ public class KAFKA extends BASE {
             val.put(i++, lrs1);
         }
         _close();
-        jval = json.toJson(val);
+        //jval = json.toJson(val);
     }
     public static void get(String topic1, String group1) {
         get(topic1, group1, MaxRows);
@@ -323,7 +332,7 @@ public class KAFKA extends BASE {
         try {
             consumer.close();
         } catch (Exception e) {
-            logerror("Consumer closed.");
+            //logerror("Consumer closed.");
         }
         status = false;
     }

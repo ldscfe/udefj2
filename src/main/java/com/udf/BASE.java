@@ -16,18 +16,12 @@ package com.udf;
   1.25       2024/04/22   Adam             Add split, rep
   1.26       2024/05/15   Adam             split -> str2list, str2map(Specify separator)
   1.27       2024/05/31   Adam             Add arr2map, nvl
+  1.29       2024/10/09   Adam             Add map2map(Object --> String), remove gson
 
- format:
-    object  :
+ Usage:
     property: VERSION, json, UDEFLOGOFF, LOOPMAX
-    method  : at, isnull, log, dt, hash, md5, base64, des, trim, rep, reverse, str2list, str2map
-
-        <!--Json-->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.9</version>
-        </dependency>
+    method  : at, isnull, log, dt, hash, md5, base64, des, trim, rep, reverse, str2list, str2map, map2map
+    pom     :
         <!--log4j-->
         <dependency>
             <groupId>log4j</groupId>
@@ -35,7 +29,6 @@ package com.udf;
             <version>1.2.17</version>
         </dependency>
         <!--slf4j-->
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -44,8 +37,7 @@ package com.udf;
 
 ------------------------------------------------------------------------------
 */
-
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,14 +64,15 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class BASE {
     // Property
-    public static final String VERSION = "v1.27.2";
+    public static final String VERSION = "v1.28.0";
     public static boolean UDEFLOGOFF = false;
     public static String CHARSET = "UTF-8";
     public static int LOOPMAX = 1024;
-    public static final Gson json = new Gson();
+    //public static final Gson json = new Gson();
     // Private
     private static final AtomicInteger _UDEFAT = new AtomicInteger(0);
     static {
@@ -532,6 +525,15 @@ public class BASE {
         }
 
         return src;
+    }
+    // Map<String, String> --> Map<String, Object>
+    public static <T> Map<String, String> map2map(Map<String, T> m1) {
+        return m1.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().toString()
+                ));
     }
     // reverse a string, like: abc --> cba
     public static String reverse(String s1) {

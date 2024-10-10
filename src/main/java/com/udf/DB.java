@@ -9,11 +9,13 @@ package com.udf;
   ---------  ----------  ---------------  ------------------------------------
   1.0        2024/2/19   Adam
   1.1        2024/2/28   Adam             merge DB(MySQL,H2)
+  1.1.6      2024/10/9   Adam             cnf --> cnfyaml, remove gson
 
- format:
+ Usage:
     property: status, info, val, jval, col
-    method  : setAll(setok, seterr, setINIT), dbconn, execSQL, execute, execStream
-
+    method  : dbconn, execSQL, execute, execStream
+    import  : cnfyaml
+    pom     :
         <!--mysql-->
         <dependency>
             <groupId>mysql</groupId>
@@ -32,71 +34,77 @@ package com.udf;
             <artifactId>h2</artifactId>
             <version>2.2.224</version>
         </dependency>
+        <!-- json -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
 
 ------------------------------------------------------------------------------
 */
-
 import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
+import static com.udf.BASE.*;
 
-public class DB extends BASE {
-    public static final String VERSION = "v1.1.5";
+public class DB {
+    public static final String VERSION = "v1.1.6";
+
     public static Map<String, String> info = new LinkedHashMap<>();            // info
     public static List<String> col = new ArrayList<>();                        // data set column
     public static Map<Integer, List<String>> val = new LinkedHashMap<>();      // data set result
     public static Map<Integer, Map<String, String>> val2 = new LinkedHashMap<>();    // data set result2
-    public static String jval2 = "";                                           // data set result2(json)
+    //public static String jval2 = "";                                           // data set result2(json)
     public static Connection conn;
     public static Statement curr;
     public static ResultSet rs;
     public static int cs = 0;                                                  // rows count
     public static boolean status = false;                                      // db connect status
-    public static int MaxRows = 1000;                                          // return MAX of rows count
+    public static int MaxRows = 10000;                                          // return MAX of rows count
     // protected & private
     protected static Map<String, String> dbinfo = new LinkedHashMap<>();       // db connect info
     private String dboffset;                                                   // db limit & offset format(from sys.cnf)
 
-
     public DB() {
-        this("default", "db.cnf");
+        this("default", "db.yaml");
     }
     public DB(String dbname) {
-        this(dbname, "db.cnf");
+        this(dbname, "db.yaml");
     }
     public DB(String dbname, String dbcnf) {
         setAll("code,msg,status,cols,cs,secs,tb,te");
         status = false;
 
-        CNF cnf1 = new CNF(dbcnf);
-        cnf1.put(dbinfo, dbname);
+        CNFYAML cnf1 = new CNFYAML(dbcnf);
+        dbinfo = map2map(cnf1.get(dbname));
         dbconn();
     }
-    public void setAll(String str1) {
+    private void setAll(String str1) {
         String[] s1 = str1.split(",");
         for(int i=0; i<s1.length; i++) {
             info.put(s1[i], "");
         }
     }
-    public void setok() {
+    private void setok() {
         info.put("status", "1");
         info.put("code", "0000");
         info.put("msg", "success.");
     }
-    public void seterr() {
+    private void seterr() {
         info.put("status", "0");
         info.put("code", "1000");
         info.put("msg", "SQL Error.");
     }
-    public void setinit() {
+    private void setinit() {
         setAll("code,msg,status,cols,cs,secs,tb,te");
         col.clear();
         val.clear();
         val2.clear();
-        jval2 = "";
+        //jval2 = "";
     }
 
     public void dbconn() {
@@ -200,7 +208,7 @@ public class DB extends BASE {
             return 0;
         }
 
-        jval2 = json.toJson(val2);
+        //jval2 = json.toJson(val2);
 
         setok();
         info.put("te", dt());
